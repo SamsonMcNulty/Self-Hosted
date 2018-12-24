@@ -1,0 +1,77 @@
+rancher:
+
+#  environment:
+#    - EXTRA_CMDLINE=/init
+#    - HTTP_PROXY=${PROXY_HTTP}
+#    - HTTPS_PROXY=${PROXY_HTTPS}
+#    - NO_PROXY=${PROXY_EXCLUDE}
+
+  network:
+    dns:
+      nameservers:
+        - 1.1.1.1
+        - 1.0.0.1
+      search:
+        - bluewillows.net
+#    interfaces:
+#      eth0:
+#        dhcp:    true
+#        gateway: ${GATEWAY_IP}
+#    http_proxy:  ${PROXY_HTTP}
+#    https_proxy: ${PROXY_HTTPS}
+#    no_proxy:    ${PROXY_EXCLUDE}
+
+  services:
+
+    # If you're using convoy
+    convoy:
+      name:  convoy
+      image: evansgp/convoy-daemon:latest
+      command:
+        - daemon
+        - --drivers     devicemapper
+        - --driver-opts dm.datadev=/dev/sdb1
+        - --driver-opts dm.metadatadev=/dev/sdb2
+      privileged: true
+      restart:    always
+      labels:
+        io.rancher.os.scope: system
+        io.rancher.os.after: docker
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+        - /etc/docker/plugins:/etc/docker/plugins
+        - /dev/sdb1:/dev/sdb1
+        - /dev/sdb2:/dev/sdb2
+      volumes_from:
+        - all-volumes
+
+    rancher-agent:
+      name:        rancher
+      image:       rancher/rancher
+      privileged:  true
+      autodestroy: always
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+      labels:
+        io.rancher.os.after: docker
+
+  services_include:
+    rancher-server: true
+
+#  system_docker:
+#    environment:
+#    - HTTP_PROXY=${PROXY_HTTP}
+#    - HTTPS_PROXY=${PROXY_HTTPS}
+#    - NO_PROXY=${PROXY_EXCLUDE}
+
+write_files:
+
+  - path: /opt/rancher/bin/start.sh
+    permissions: "0755"
+    owner: root
+    content: |
+      #!/bin/bash
+      alias convoy='sudo system-docker exec -it --privileged convoy convoy'
+
+ssh_authorized_keys:
+  - ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAgEAyr8foA5qUcpUUHUlMeektLOqPWxTLGg6MYnuL/6UHmQROtdV02vAMK5M3l1/GqlYjUo1Nz12Q5tSqyFNSms393FoetRqK9ifONyKFdyLrdWnuCAYdyvf+0DhStuNT8PU+iC5oTFEwSATM5AH1gzM8VOGHQnjgyIuccGQ6pcYWUW9Pzidhqo7q4APhzXgcXQDhmU/Gn1P+j9n1P3subsPLBT2odtHjIkBAxmSNVkmkpJKecAHlwVkb4PzxKuIk+Kvqtwe2uOuNKP46amTEkbobZe5DaJMQ6IgII4gE253qvK7t7Q4/n7wlXb19TPLN7TjUO9vmqnfJZ4UIg3PEb46mfdZEDx77sG0vXIQMjg7RwCnyedVik9mdWFcswU0HCyplWkMBG/MemH6QWWCCin6ck6y5xvjzPfIQIYFI+t36ejIIQLa5ykd+Av3UF4Y799oS1Vl/z5+ArjI+Br7/5E+DHcRg1DFbR4Hy1IzFzHuR+kkDZKmpjpZ4fB0apgyZzEfT5STR+Ec2VKn3HwfcXDcoJ5VQHu2siou6qOKMbIj13rZxleP4c/OMs756B+H8nmGZjQsHALwAKwKMwLXeFRAcAKUE/K1y+r6O0GaPsUzX+OktJOuSbxeIEerAGCpyA9Nbl9P9szsmx5rcIi5YRurROxM7O/HQLF/Wx3P5I1eeG8= rsa-key-20181223
