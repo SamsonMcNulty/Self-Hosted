@@ -1,11 +1,4 @@
 rancher:
-
-#  environment:
-#    - EXTRA_CMDLINE=/init
-#    - HTTP_PROXY=${PROXY_HTTP}
-#    - HTTPS_PROXY=${PROXY_HTTPS}
-#    - NO_PROXY=${PROXY_EXCLUDE}
-
   network:
     dns:
       nameservers:
@@ -13,13 +6,12 @@ rancher:
         - 1.0.0.1
       search:
         - bluewillows.net
-#    interfaces:
-#      eth0:
-#        dhcp:    true
-#        gateway: ${GATEWAY_IP}
-#    http_proxy:  ${PROXY_HTTP}
-#    https_proxy: ${PROXY_HTTPS}
-#    no_proxy:    ${PROXY_EXCLUDE}
+    interfaces:
+      eth0:
+        dhcp:    true
+        gateway: 10.1.0.1
+        address: 10.1.0.220/24
+
 
   services:
 
